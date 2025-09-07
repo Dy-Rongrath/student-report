@@ -13,10 +13,11 @@ type ScoreInput = { indicator: string; score: number };
 export default function BuilderClient() {
   const searchParams = useSearchParams();
   const prefillId = searchParams.get("id");
+  const prefillStudentName = searchParams.get("student");
 
   const [id, setId] = useState<string | null>(prefillId);
   const [student, setStudent] = useState({
-    name: "SAMPHEAVIN PHURINTWADH",
+    name: prefillStudentName ?? "SAMPHEAVIN PHURINTWADH",
     grade: "3",
     classGroup: "Mekun 262",
     date: new Date().toLocaleDateString(),
@@ -41,6 +42,7 @@ export default function BuilderClient() {
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({ open: false, message: "", severity: "success" });
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [prefilledFromLast, setPrefilledFromLast] = useState<string | null>(null);
 
   // Load existing report to edit if id is provided
   useEffect(() => {
@@ -63,6 +65,58 @@ export default function BuilderClient() {
     };
     load();
   }, [prefillId]);
+
+  // If creating a new report for a given student, suggest values based on the latest report
+  useEffect(() => {
+    const suggestFromLast = async () => {
+      if (prefillId) return; // editing
+      if (!prefillStudentName) return; // no student context
+      try {
+        const listRes = await fetch(`/api/students/${encodeURIComponent(prefillStudentName)}/reports?page=0&pageSize=1&sortField=date&sortDir=desc`, { cache: "no-store" });
+        if (!listRes.ok) return;
+        const list = (await listRes.json()) as { rows: Array<{ id: string; term: string; date: string }>; total: number };
+        const last = list.rows?.[0];
+        if (!last?.id) return;
+        const fullRes = await fetch(`/api/reports/${encodeURIComponent(last.id)}`);
+        if (!fullRes.ok) return;
+        const data = await fullRes.json();
+        // Compute next month date string for preview
+        const lastDate = new Date(last.date);
+        const nextDate = new Date(lastDate);
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        const nextDateStr = nextDate.toLocaleDateString();
+        // Try to increment term if it matches "Term N"
+        const incTerm = (() => {
+          const m = /term\s*(\d+)/i.exec(String(last.term ?? data.term ?? ""));
+          if (m) {
+            const n = Number(m[1]);
+            if (Number.isFinite(n)) return String(last.term).replace(m[0], `Term ${n + 1}`);
+          }
+          return String(last.term ?? data.term ?? "");
+        })();
+        // Prefill student profile fields from last
+        setStudent((s) => ({
+          ...s,
+          name: prefillStudentName,
+          grade: String(data?.student?.className ?? s.grade ?? ""),
+          classGroup: String(data?.student?.className ?? s.classGroup ?? ""),
+          teacher: String(data?.teacherName ?? s.teacher ?? ""),
+          evaluationType: incTerm,
+          date: nextDateStr,
+        }));
+        // Use same indicators, reset scores to 0
+        const lastIndicators: ScoreInput[] = Array.isArray(data?.scores) ? (data.scores as Array<{ indicator?: string; subject?: string }>).map((r) => ({ indicator: String(r.indicator ?? r.subject ?? ""), score: 0 })) : [];
+        if (lastIndicators.length > 0) setScores(lastIndicators);
+        setComments("");
+        setPrefilledFromLast(last.id);
+      } catch {
+        // silent fail
+      }
+    };
+    suggestFromLast();
+    // Only run once on mount when creating a new report with ?student
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Track unsaved changes
   useEffect(() => {
@@ -190,6 +244,9 @@ export default function BuilderClient() {
               <Stack spacing={2}>
                 {dirty && (
                   <Alert severity="info" variant="outlined">You have unsaved changes. Don’t forget to save.</Alert>
+                )}
+                {!id && prefilledFromLast && (
+                  <Alert severity="success" variant="outlined">Prefilled from last report {prefilledFromLast}. Review and save.</Alert>
                 )}
                 {id && (
                   <TextField label="Report ID" value={id} size="small" InputProps={{ readOnly: true }} helperText="Auto-generated on create" />

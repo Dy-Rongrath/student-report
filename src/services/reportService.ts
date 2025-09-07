@@ -48,4 +48,20 @@ export const ReportService = {
   async deleteById(id: string) {
     await ReportRepository.delete(id);
   },
+
+  async listStudents(opts: { q?: string; skip: number; take: number; sortField: "lastUpdatedAt" | "name"; sortDir: "asc" | "desc" }) {
+    const [total, rows] = await Promise.all([
+      ReportRepository.countStudents(opts.q),
+      ReportRepository.listStudents(opts),
+    ]);
+    return { rows, total } as { rows: Array<{ name: string; reportCount: number; lastUpdatedAt?: string; lastDate?: string }>; total: number };
+  },
+
+  async getStudentRecord(name: string, opts: { q?: string; skip: number; take: number; sortField: "date" | "updatedAt"; sortDir: "asc" | "desc" }) {
+    const [reports, total] = await Promise.all([
+      ReportRepository.listReportsByStudent(name, opts),
+      ReportRepository.countReportsByStudent(name, opts.q),
+    ]);
+    return { name, reports, total } as { name: string; total: number; reports: Array<{ id: string; term: string; date: string; percentage?: number; updatedAt?: string }> };
+  },
 };

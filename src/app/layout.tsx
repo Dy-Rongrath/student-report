@@ -41,6 +41,7 @@ export default function RootLayout({
               </Stack>
               <Stack direction="row" spacing={1} alignItems="center">
                 <ThemeToggle />
+                <Button component={Link} href="/students" variant="text" color="inherit" size="small">Students</Button>
                 <Button component={Link} href="/reports/create" variant="contained" color="primary" size="small">Create report</Button>
               </Stack>
             </Container>
