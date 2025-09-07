@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Card, CardHeader, CardContent, Button, Box } from "@mui/material";
+import { Card, CardHeader, CardContent, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
 import { DataGrid, GridColDef, GridPaginationModel, GridSortModel, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarDensitySelector, GridToolbarQuickFilter, GridFilterModel } from "@mui/x-data-grid";
+import { useRouter } from "next/navigation";
 
 type StudentRow = { name: string; reportCount: number; lastUpdatedAt?: string; lastDate?: string };
 
 export default function StudentsPage() {
+  const router = useRouter();
   const [items, setItems] = useState<StudentRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -15,6 +17,8 @@ export default function StudentsPage() {
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10 });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "lastUpdatedAt", sort: "desc" }] as GridSortModel);
   const [query, setQuery] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [newStudentName, setNewStudentName] = useState("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -53,6 +57,9 @@ export default function StudentsPage() {
       <GridToolbarQuickFilter debounceMs={300} />
       <Box sx={{ ml: 1 }}>
         <Button onClick={refresh} variant="outlined" size="small">Refresh</Button>
+      </Box>
+      <Box sx={{ ml: 1 }}>
+        <Button onClick={() => setAddOpen(true)} variant="contained" size="small">Add student</Button>
       </Box>
     </GridToolbarContainer>
   );
@@ -97,6 +104,16 @@ export default function StudentsPage() {
           pageSizeOptions={[5, 10, 25, 50]}
         />
       </CardContent>
+      <Dialog open={addOpen} onClose={() => setAddOpen(false)}>
+        <DialogTitle>Add student</DialogTitle>
+        <DialogContent>
+          <TextField autoFocus margin="dense" label="Student name" fullWidth value={newStudentName} onChange={(e) => setNewStudentName(e.target.value)} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddOpen(false)}>Cancel</Button>
+          <Button disabled={!newStudentName.trim()} variant="contained" onClick={() => { const name = newStudentName.trim(); setAddOpen(false); setNewStudentName(""); router.push(`/reports/create?student=${encodeURIComponent(name)}`); }}>Create first report</Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

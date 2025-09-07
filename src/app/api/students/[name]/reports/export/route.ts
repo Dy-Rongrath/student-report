@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUrl, readSearch, readSort } from "@/lib/query";
 import { ReportRepository } from "@/repositories/reportRepository";
+import { StudentRepository } from "@/repositories/studentRepository";
 
 function toCsvValue(v: unknown) {
   if (v === null || v === undefined) return "";
@@ -17,7 +18,17 @@ export async function GET(_request: Request, context: { params: Promise<{ name: 
     const { sortField, sortDir } = readSort(url, ["date", "updatedAt"], "date");
     const limit = Math.min(5000, Math.max(1, Number(url.searchParams.get("limit") ?? 5000)));
 
-    const rows = await ReportRepository.listReportsByStudent(name, { q, sortField: sortField as "date" | "updatedAt", sortDir, skip: 0, take: limit });
+    const student = await StudentRepository.findByName(name);
+    if (!student) {
+      const header = ["id", "term", "date", "percentage", "updatedAt"];
+      return new NextResponse(header.join(",") + "\n", {
+        headers: {
+          "content-type": "text/csv; charset=utf-8",
+          "content-disposition": `attachment; filename="${encodeURIComponent(name)}_reports.csv"`,
+        },
+      });
+    }
+  const rows = await ReportRepository.listReportsByStudentId(student.id, { q, sortField: sortField as "date" | "updatedAt", sortDir, skip: 0, take: limit });
 
     const header = ["id", "term", "date", "percentage", "updatedAt"];
     const lines = [header.join(",")];

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ReportService } from "@/services/reportService";
-import { Card, CardHeader, CardContent } from "@mui/material";
+import { Card, CardHeader, CardContent, Button } from "@mui/material";
+import { ManageStudentActions } from "./ManageStudentActions";
 import { ClientStudentReports } from "./ClientStudentReports";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,10 @@ export default async function StudentDetailPage({ params, searchParams }: { para
 
   return (
     <Card>
-      <CardHeader title={`Student: ${name}`} subheader={`Total reports: ${total}`} action={<Link href={`/reports/create?student=${encodeURIComponent(name)}`}>Create new report</Link>} />
+      <CardHeader title={`Student: ${name}`} subheader={`Total reports: ${total}`} action={<>
+        <Button size="small" component={Link} href={`/reports/create?student=${encodeURIComponent(name)}`}>Create new report</Button>
+        <ManageStudentActions name={name} />
+      </>} />
       <CardContent>
         <ClientStudentReports name={name} />
       </CardContent>

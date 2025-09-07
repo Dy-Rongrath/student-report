@@ -16,6 +16,7 @@ export type ReportCreate = {
   date: string; // ISO date
   percentage?: number | null;
   data: string; // JSON string
+  studentId?: string | null;
 };
 
 export type ReportUpdate = Omit<ReportCreate, "id">;
@@ -69,6 +70,7 @@ export const ReportRepository = {
         date: new Date(input.date),
         percentage: input.percentage ?? null,
         data: input.data,
+  studentId: input.studentId ?? null,
       },
       select: { id: true },
     });
@@ -84,6 +86,7 @@ export const ReportRepository = {
         date: new Date(input.date),
         percentage: input.percentage ?? null,
         data: input.data,
+        studentId: input.studentId ?? null,
       },
       update: {
         name: input.name,
@@ -91,6 +94,7 @@ export const ReportRepository = {
         date: new Date(input.date),
         percentage: input.percentage ?? null,
         data: input.data,
+        studentId: input.studentId,
       },
     });
   },
@@ -170,5 +174,58 @@ export const ReportRepository = {
         }
       : { name };
     return prisma.report.count({ where });
+  },
+
+  // StudentId-based versions (prefer these for correctness)
+  async listReportsByStudentId(
+    studentId: string,
+    opts: { q?: string; skip: number; take: number; sortField: "date" | "updatedAt"; sortDir: "asc" | "desc" }
+  ) {
+    const { skip, take, sortField, sortDir, q } = opts;
+    const where = q
+      ? {
+          AND: [
+            { studentId },
+            {
+              OR: [
+                { id: { contains: q } },
+                { term: { contains: q, mode: "insensitive" as const } },
+              ],
+            },
+          ],
+        }
+      : { studentId };
+    const rows = await prisma.report.findMany({ where, orderBy: { [sortField]: sortDir }, skip, take });
+    return rows.map((r: { id: string; term: string; date: Date; percentage: number | null; updatedAt: Date }) => ({
+      id: r.id,
+      term: r.term,
+      date: r.date.toISOString(),
+      percentage: r.percentage ?? undefined,
+      updatedAt: r.updatedAt?.toISOString?.(),
+    })) as Array<{ id: string; term: string; date: string; percentage?: number; updatedAt?: string }>;
+  },
+  async countReportsByStudentId(studentId: string, q?: string) {
+    const where = q
+      ? {
+          AND: [
+            { studentId },
+            {
+              OR: [
+                { id: { contains: q } },
+                { term: { contains: q, mode: "insensitive" as const } },
+              ],
+            },
+          ],
+        }
+      : { studentId };
+    return prisma.report.count({ where });
+  },
+
+  async renameStudent(oldName: string, newName: string, newStudentId?: string) {
+    return prisma.report.updateMany({ where: { name: oldName }, data: { name: newName, studentId: newStudentId ?? undefined } });
+  },
+
+  async deleteStudent(name: string) {
+    return prisma.report.deleteMany({ where: { name } });
   },
 };

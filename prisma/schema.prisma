@@ -18,4 +18,18 @@ model Report {
   data       String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  // Link to Student (optional for backfill; code will set it going forward)
+  studentId String?
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
+  @@index([studentId])
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reports   Report[]
 }
