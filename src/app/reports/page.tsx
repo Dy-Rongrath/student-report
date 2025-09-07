@@ -24,6 +24,8 @@ export default function ReportsIndexPage() {
   const router = useRouter();
   const mounted = useRef(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [items, setItems] = useState<Summary[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ export default function ReportsIndexPage() {
     const params = new URLSearchParams({
       page: String(paginationModel.page),
       pageSize: String(paginationModel.pageSize),
-      q: query,
+      q: debouncedQuery,
       sortField: sort?.field ?? "date",
       sortDir: (sort?.sort as "asc" | "desc" | undefined) ?? "desc",
     });
@@ -51,7 +53,7 @@ export default function ReportsIndexPage() {
     setItems(data.rows);
     setTotal(data.total);
     setLoading(false);
-  }, [paginationModel.page, paginationModel.pageSize, query, sortModel]);
+  }, [paginationModel.page, paginationModel.pageSize, debouncedQuery, sortModel]);
 
   useEffect(() => {
     mounted.current = true;
@@ -88,6 +90,9 @@ export default function ReportsIndexPage() {
         if (parsed && typeof parsed === "object") setColumnVisibilityModel(parsed);
       }
     } catch {}
+    finally {
+      setHydrated(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -99,6 +104,18 @@ export default function ReportsIndexPage() {
   useEffect(() => {
     try { localStorage.setItem("reports:quickFilter", JSON.stringify(filterModel.quickFilterValues ?? [])); } catch {}
   }, [filterModel]);
+
+  // Debounce query changes
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  // Unified fetch effect
+  useEffect(() => {
+    if (!isMounted || !hydrated) return;
+    refresh();
+  }, [isMounted, hydrated, paginationModel.page, paginationModel.pageSize, sortModel, debouncedQuery, refresh]);
 
   const copyId = async (id: string) => {
     try {
@@ -156,18 +173,7 @@ export default function ReportsIndexPage() {
     </GridToolbarContainer>
   );
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  // Debounced search refresh
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setPaginationModel((m) => ({ ...m, page: 0 }));
-      refresh();
-    }, 300);
-    return () => clearTimeout(t);
-  }, [query, refresh]);
+  // Note: unified fetch effect below handles initial load and changes
 
   const onDelete = async () => {
     if (!deleteId) return;
@@ -270,6 +276,7 @@ export default function ReportsIndexPage() {
                 setFilterModel(model);
                 const qv = (model.quickFilterValues ?? []).join(" ").trim();
                 setQuery(qv);
+                setPaginationModel((m) => ({ ...m, page: 0 }));
               }}
               columnVisibilityModel={columnVisibilityModel}
               onColumnVisibilityModelChange={(model) => {
