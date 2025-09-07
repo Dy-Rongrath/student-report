@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Student Report App (Next.js + Prisma + Postgres)
 
-## Getting Started
+## Overview
+Build, list, view, print A4 student reports with a clean MUI UI. Data is persisted in Postgres via Prisma.
 
-First, run the development server:
+Key routes:
+- /reports/create – create/update reports, print preview
+- /reports – list with sort/pagination, actions
+- /reports/[id] – print-friendly view
+- /api/reports – list API
+- /api/reports/[id] – get/save/delete API
+- /api/health – DB health check
 
+## Setup
+1) Environment
+- Copy `.env.example` to `.env` and set a Postgres URL:
+	- `DATABASE_URL="postgres://USER:PASS@HOST:5432/DB?sslmode=require"`
+	- Optional: `DIRECT_URL` (used by migrations). If not set differently, you can set it equal to `DATABASE_URL`.
+
+2) Install and generate
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run prisma:generate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3) Apply migrations
+```bash
+npx prisma migrate deploy
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4) Run dev server
+```bash
+npm run dev
+```
+Open the printed URL (e.g., http://localhost:3000 or :3001) and go to /reports (list) or /reports/create (builder).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
+- prisma:generate – regenerate Prisma Client
+- prisma:migrate – create a new migration in dev
+- prisma:deploy – apply existing migrations (CI/prod)
+- prisma:studio – open Prisma Studio
+- prisma:seed – insert 20 sample reports
 
-## Learn More
+Optional helpers
+```bash
+node scripts/check-count.js     # show current Report rows
+node scripts/check-indexes.js   # list current DB indexes on Report
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+- This app uses standard Prisma Client (Node runtime), not Accelerate.
+- Keep your `.env` out of version control.
+ - If connection fails on managed Postgres, add `sslmode=require` to your DATABASE_URL.
