@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ReportDataSchema } from "@/app/reports/types";
+import { ReportDataSchema } from "@/domain/report/types";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(

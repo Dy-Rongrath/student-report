@@ -1,5 +1,5 @@
-import ClientReport from "@/app/reports/[id]/ClientReport";
-import { headers } from "next/headers";
+import ClientReport from "@/components/ClientReport";
+import { prisma } from "@/lib/prisma";
 
 type ApiReport = {
   school: { name: string; logoUrl?: string };
@@ -17,19 +17,15 @@ export const dynamic = "force-dynamic";
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const hdrs = await headers();
-  const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host");
-  const proto = hdrs.get("x-forwarded-proto") ?? (host?.includes("localhost") ? "http" : "https");
-  const url = host ? `${proto}://${host}/api/reports/${encodeURIComponent(id)}` : `/api/reports/${encodeURIComponent(id)}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) {
+  const db = await prisma.report.findUnique({ where: { id } }).catch(() => null);
+  if (!db) {
     return (
       <div className="p-6">
         <p className="text-red-600">Failed to load report.</p>
       </div>
     );
   }
-  const data = (await res.json()) as ApiReport;
+  const data = JSON.parse(db.data) as ApiReport;
 
   const student = {
     name: data.student?.name ?? "",

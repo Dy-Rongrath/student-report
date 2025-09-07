@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import ClientReport from "@/app/reports/[id]/ClientReport";
-import type { ClientReportProps } from "@/app/reports/[id]/ClientReport";
+import ClientReport from "@/components/ClientReport";
+import type { ClientReportProps } from "@/components/ClientReport";
 import { Box, Card, CardContent, CardHeader, TextField, Typography, Button, IconButton, Stack, Divider, Snackbar, Alert, CircularProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";

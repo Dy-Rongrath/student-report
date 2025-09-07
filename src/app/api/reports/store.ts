@@ -1,4 +1,4 @@
-import type { ReportData } from "@/app/reports/types";
+import type { ReportData } from "@/domain/report/types";
 
 const store = new Map<string, ReportData>();
 
