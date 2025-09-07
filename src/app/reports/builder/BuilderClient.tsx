@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ClientReport from "@/components/ClientReport";
 import type { ClientReportProps } from "@/components/ClientReport";
-import { Box, Card, CardContent, CardHeader, TextField, Typography, Button, IconButton, Stack, Divider, Snackbar, Alert, CircularProgress } from "@mui/material";
+import { Box, Card, CardContent, CardHeader, TextField, Typography, Button, IconButton, Stack, Divider, Snackbar, Alert, CircularProgress, LinearProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -175,20 +175,21 @@ export default function BuilderClient() {
                 )}
 
                 <Divider textAlign="left">Student</Divider>
-                <TextField label="Name" placeholder="Full name" value={student.name} onChange={(e) => setStudent({ ...student, name: e.target.value })} size="small" error={student.name.trim().length === 0} helperText={student.name.trim().length === 0 ? "Name is required." : ""} />
+                <TextField label="Student name" placeholder="e.g. Jane Doe" value={student.name} onChange={(e) => setStudent({ ...student, name: e.target.value })} size="small" error={student.name.trim().length === 0} helperText={student.name.trim().length === 0 ? "Name is required." : ""} />
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                   <TextField fullWidth label="Grade" placeholder="e.g. 3" value={student.grade} onChange={(e) => setStudent({ ...student, grade: e.target.value })} size="small" />
                   <TextField fullWidth label="Class/Group" placeholder="e.g. Mekun 262" value={student.classGroup} onChange={(e) => setStudent({ ...student, classGroup: e.target.value })} size="small" />
                 </Stack>
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                   <TextField fullWidth label="Teacher" placeholder="Teacher name" value={student.teacher} onChange={(e) => setStudent({ ...student, teacher: e.target.value })} size="small" error={student.teacher.trim().length === 0} helperText={student.teacher.trim().length === 0 ? "Teacher is required." : ""} />
-                  <TextField fullWidth label="Evaluation Type" placeholder="e.g. Math Olympiad Training" value={student.evaluationType} onChange={(e) => setStudent({ ...student, evaluationType: e.target.value })} size="small" error={student.evaluationType.trim().length === 0} helperText={student.evaluationType.trim().length === 0 ? "Evaluation type is required." : ""} />
+                  <TextField fullWidth label="Term / Assessment" placeholder="e.g. Term 1 or Math Olympiad" value={student.evaluationType} onChange={(e) => setStudent({ ...student, evaluationType: e.target.value })} size="small" error={student.evaluationType.trim().length === 0} helperText={student.evaluationType.trim().length === 0 ? "This field is required." : ""} />
                 </Stack>
 
                 <Divider textAlign="left">Indicators</Divider>
                 <Stack direction="row" spacing={1}>
                   <Button variant="outlined" size="small" onClick={loadDefaultIndicators} startIcon={<AddIcon />}>Use defaults</Button>
-                  <Button variant="contained" size="small" onClick={onAddRow} startIcon={<AddIcon />}>Add</Button>
+                  <Button variant="contained" size="small" onClick={onAddRow} startIcon={<AddIcon />}>Add indicator</Button>
+                  <Button variant="text" size="small" color="inherit" onClick={() => setScores([])}>Reset</Button>
                 </Stack>
                 {scores.length === 0 && (
                   <Typography variant="caption" color="error">Add at least one indicator.</Typography>
@@ -199,9 +200,12 @@ export default function BuilderClient() {
                       <TextField fullWidth size="small" label="Indicator" placeholder="Indicator" value={row.indicator} onChange={(e) => {
                         const v = e.target.value; setScores((prev) => prev.map((r, idx) => idx === i ? { ...r, indicator: v } : r));
                       }} />
-                      <TextField type="number" size="small" inputProps={{ step: 0.5, min: 0, max: 10 }} label="Score (0-10)" value={row.score} onChange={(e) => {
-                        const v = Number(e.target.value); setScores((prev) => prev.map((r, idx) => idx === i ? { ...r, score: v } : r));
-                      }} />
+                      <TextField type="number" size="small" inputProps={{ step: 0.5, min: 0, max: 10 }} label="Score (0-10)" value={row.score}
+                        error={Number.isNaN(row.score) || row.score < 0 || row.score > 10}
+                        helperText={(row.score < 0 || row.score > 10) ? "Enter between 0 and 10" : ""}
+                        onChange={(e) => {
+                          const v = Number(e.target.value); setScores((prev) => prev.map((r, idx) => idx === i ? { ...r, score: v } : r));
+                        }} />
                       <IconButton color="error" aria-label="remove" onClick={() => onRemoveRow(i)}>
                         <DeleteIcon />
                       </IconButton>
@@ -211,9 +215,20 @@ export default function BuilderClient() {
 
                 <TextField label="Comments" multiline minRows={3} placeholder="Overall observations, strengths, and areas to improve..." value={comments} onChange={(e) => setComments(e.target.value)} />
 
+                <Divider textAlign="left">Summary</Divider>
+                <Stack spacing={1}>
+                  <Typography variant="body2" color="text.secondary">Total score: {scores.reduce((a, s) => a + Number(s.score || 0), 0)} / {scores.length * 10}</Typography>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box sx={{ flex: 1 }}>
+                      <LinearProgress variant="determinate" value={Math.min(100, Math.max(0, Math.round(((scores.reduce((a, s) => a + Number(s.score || 0), 0) / (scores.length * 10 || 1)) * 100))))} />
+                    </Box>
+                    <Typography sx={{ minWidth: 56, textAlign: "right" }}>{Math.round(((scores.reduce((a, s) => a + Number(s.score || 0), 0) / (scores.length * 10 || 1)) * 100))}%</Typography>
+                  </Stack>
+                </Stack>
+
                 <Stack direction="row" spacing={1}>
                   <Button variant="contained" color="primary" disabled={!isValid || saving} onClick={() => window.print()}>Print</Button>
-                  <Button variant="contained" color="success" disabled={!isValid || saving} onClick={onSave} startIcon={saving ? <CircularProgress size={16} /> : undefined}>{saving ? "Saving…" : "Save"}</Button>
+                  <Button variant="contained" color="success" disabled={!isValid || saving} onClick={onSave} startIcon={saving ? <CircularProgress size={16} /> : undefined}>{saving ? "Saving…" : (id ? "Save changes" : "Create report")}</Button>
                 </Stack>
               </Stack>
             </CardContent>

@@ -17,6 +17,7 @@ type Summary = {
   term: string;
   date: string;
   percentage?: number;
+  updatedAt?: string;
 };
 
 export default function ReportsIndexPage() {
@@ -25,7 +26,7 @@ export default function ReportsIndexPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10 });
-  const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "date", sort: "desc" }] as GridSortModel);
+  const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "updatedAt", sort: "desc" }] as GridSortModel);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({ open: false, message: "", severity: "success" });
 
@@ -75,19 +76,18 @@ export default function ReportsIndexPage() {
 
   const onDuplicate = async (id: string) => {
     try {
-      // fetch existing, assign a new id (timestamp-based), and save it back
+      // Fetch existing, then create a new report via collection POST (auto id)
       const res = await fetch(`/api/reports/${encodeURIComponent(id)}`);
       if (!res.ok) throw new Error(`Load failed: ${res.status}`);
       const data = await res.json();
-      const newId = `${id}-${Date.now().toString().slice(-6)}`;
-      data.student = { ...data.student, id: newId };
-      const save = await fetch(`/api/reports/${encodeURIComponent(newId)}`, {
+      const save = await fetch(`/api/reports`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!save.ok) throw new Error(`Save failed: ${save.status}`);
-      setSnack({ open: true, message: `Duplicated as ${newId}`, severity: "success" });
+      const j = (await save.json().catch(() => ({}))) as { id?: string };
+      setSnack({ open: true, message: j?.id ? `Duplicated as ${j.id}` : `Duplicated`, severity: "success" });
       await refresh();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Duplicate failed";
@@ -112,12 +112,9 @@ export default function ReportsIndexPage() {
       <CardHeader
         title="Reports"
         action={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Button startIcon={<AddIcon />} variant="contained" color="primary" component={Link} href="/reports/create">
-              Create
-            </Button>
-            <Button variant="outlined" onClick={onExport}>Export CSV</Button>
-          </Stack>
+          <Button startIcon={<AddIcon />} variant="contained" color="primary" component={Link} href="/reports/create">
+            Create
+          </Button>
         }
       />
       <CardContent>
@@ -126,10 +123,12 @@ export default function ReportsIndexPage() {
             placeholder="Search by ID, name, or term"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            size="small"
             sx={{ maxWidth: 420 }}
           />
-          <Button onClick={refresh} startIcon={<RefreshIcon />} variant="outlined">Refresh</Button>
+          <Stack direction="row" spacing={1}>
+            <Button onClick={refresh} startIcon={<RefreshIcon />} variant="outlined">Refresh</Button>
+            <Button onClick={onExport} variant="outlined">Export CSV</Button>
+          </Stack>
         </Stack>
 
         {loading ? (
@@ -150,6 +149,7 @@ export default function ReportsIndexPage() {
                 { field: "id", headerName: "ID", flex: 0.6 },
                 { field: "name", headerName: "Name", flex: 1 },
                 { field: "term", headerName: "Term", flex: 0.8 },
+                { field: "updatedAt", headerName: "Updated", flex: 0.8, valueFormatter: (p: { value: unknown }) => (typeof p.value === "string" ? new Date(p.value).toLocaleString() : "-") },
                 { field: "date", headerName: "Date", flex: 0.8, hide: true },
                 { field: "percentage", headerName: "%", flex: 0.4, valueFormatter: (p: { value: unknown }) => (typeof p.value === "number" ? p.value.toFixed(1) : "-") },
                 {
@@ -183,7 +183,7 @@ export default function ReportsIndexPage() {
               onPaginationModelChange={setPaginationModel}
               sortingOrder={["desc", "asc"]}
               sortModel={sortModel}
-              onSortModelChange={(m) => setSortModel(m.length ? m : [{ field: "date", sort: "desc" }])}
+              onSortModelChange={(m) => setSortModel(m.length ? m : [{ field: "updatedAt", sort: "desc" }])}
               pageSizeOptions={[5, 10, 25, 50]}
             />
           </div>

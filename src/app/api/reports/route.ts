@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ReportDataSchema } from "@/domain/report/types";
+import { randomUUID } from "crypto";
 
 export async function GET(request: Request) {
   try {
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
     const sortFieldParam = url.searchParams.get("sortField") ?? "date";
     const sortDirParam = (url.searchParams.get("sortDir") ?? "desc").toLowerCase() as "asc" | "desc";
 
-    const allowedSort: Record<string, true> = { id: true, name: true, term: true, date: true, percentage: true };
+  const allowedSort: Record<string, true> = { id: true, name: true, term: true, date: true, percentage: true, updatedAt: true };
     const sortField = allowedSort[sortFieldParam] ? sortFieldParam : "date";
     const sortDir: "asc" | "desc" = sortDirParam === "asc" ? "asc" : "desc";
 
@@ -42,6 +43,7 @@ export async function GET(request: Request) {
       term: r.term,
       date: r.date.toISOString(),
       percentage: r.percentage ?? undefined,
+      updatedAt: (r.updatedAt as Date).toISOString(),
     }));
     return NextResponse.json({ rows: summaries, total });
   } catch {
@@ -58,9 +60,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Invalid payload", details: parsed.error.flatten() }, { status: 400 });
     }
     const d = parsed.data;
+    const id = randomUUID();
     const created = await prisma.report.create({
       data: {
-        // id is auto via @default(cuid())
+        id,
         name: d.student.name,
         term: d.term,
         date: new Date(d.date),

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const sortDirParam = (url.searchParams.get("sortDir") ?? "desc").toLowerCase() as "asc" | "desc";
     const limit = Math.min(5000, Math.max(1, Number(url.searchParams.get("limit") ?? 5000)));
 
-    const allowedSort: Record<string, true> = { id: true, name: true, term: true, date: true, percentage: true };
+  const allowedSort: Record<string, true> = { id: true, name: true, term: true, date: true, percentage: true, updatedAt: true };
     const sortField = allowedSort[sortFieldParam] ? sortFieldParam : "date";
     const sortDir: "asc" | "desc" = sortDirParam === "asc" ? "asc" : "desc";
 
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
       take: limit,
     });
 
-    const header = ["id", "name", "term", "date", "percentage"];
+  const header = ["id", "name", "term", "date", "percentage", "updatedAt"];
     const lines = [header.join(",")];
     for (const r of rows) {
       lines.push([
@@ -45,6 +45,7 @@ export async function GET(request: Request) {
         toCsvValue(r.term),
         toCsvValue(r.date.toISOString()),
         toCsvValue(r.percentage ?? ""),
+        toCsvValue(r.updatedAt.toISOString()),
       ].join(","));
     }
     const body = lines.join("\n");
