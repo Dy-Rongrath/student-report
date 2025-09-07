@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { ReportRepository } from "@/repositories/reportRepository";
+import { getUrl, readSearch, readSort } from "@/lib/query";
 
 function toCsvValue(v: unknown) {
   if (v === null || v === undefined) return "";
@@ -10,42 +11,23 @@ function toCsvValue(v: unknown) {
 
 export async function GET(request: Request) {
   try {
-    const url = new URL(request.url);
-    const q = (url.searchParams.get("q") ?? "").trim();
-    const sortFieldParam = url.searchParams.get("sortField") ?? "date";
-    const sortDirParam = (url.searchParams.get("sortDir") ?? "desc").toLowerCase() as "asc" | "desc";
-    const limit = Math.min(5000, Math.max(1, Number(url.searchParams.get("limit") ?? 5000)));
+  const url = getUrl(request);
+  const q = readSearch(url);
+  const { sortField, sortDir } = readSort(url, ["id", "name", "term", "date", "percentage", "updatedAt"], "date");
+  const limit = Math.min(5000, Math.max(1, Number(url.searchParams.get("limit") ?? 5000)));
 
-  const allowedSort: Record<string, true> = { id: true, name: true, term: true, date: true, percentage: true, updatedAt: true };
-    const sortField = allowedSort[sortFieldParam] ? sortFieldParam : "date";
-    const sortDir: "asc" | "desc" = sortDirParam === "asc" ? "asc" : "desc";
-
-    const where = q
-      ? {
-          OR: [
-            { id: { contains: q } },
-            { name: { contains: q, mode: "insensitive" as const } },
-            { term: { contains: q, mode: "insensitive" as const } },
-          ],
-        }
-      : undefined;
-
-    const rows = await prisma.report.findMany({
-      where,
-      orderBy: { [sortField]: sortDir },
-      take: limit,
-    });
+  const rows = await ReportRepository.list({ q, sortField, sortDir, skip: 0, take: limit });
 
   const header = ["id", "name", "term", "date", "percentage", "updatedAt"];
     const lines = [header.join(",")];
-    for (const r of rows) {
+  for (const r of rows) {
       lines.push([
         toCsvValue(r.id),
         toCsvValue(r.name),
         toCsvValue(r.term),
-        toCsvValue(r.date.toISOString()),
+    toCsvValue(r.date),
         toCsvValue(r.percentage ?? ""),
-        toCsvValue(r.updatedAt.toISOString()),
+    toCsvValue(r.updatedAt ?? ""),
       ].join(","));
     }
     const body = lines.join("\n");

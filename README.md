@@ -51,3 +51,13 @@ node scripts/check-indexes.js   # list current DB indexes on Report
 - This app uses standard Prisma Client (Node runtime), not Accelerate.
 - Keep your `.env` out of version control.
  - If connection fails on managed Postgres, add `sslmode=require` to your DATABASE_URL.
+
+## Architecture
+- Routes (app/api/*): thin request handlers — parse inputs, call services, return JSON.
+- Services (src/services/*): business logic on top of repositories (validation, mapping, orchestration).
+- Repositories (src/repositories/*): data access; only layer touching Prisma models.
+- Domain (src/domain/*): Zod schemas and TypeScript types.
+- Lib (src/lib/*): cross-cutting helpers (prisma client, http helpers, query parsing).
+
+Testing
+- Vitest for unit tests under `tests/`. Utilities and repository mapping covered.
