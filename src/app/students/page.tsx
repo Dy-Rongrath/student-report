@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardContent, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
 import { DataGrid, GridColDef, GridPaginationModel, GridSortModel, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarDensitySelector, GridToolbarQuickFilter, GridFilterModel } from "@mui/x-data-grid";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ type StudentRow = { name: string; reportCount: number; lastUpdatedAt?: string; l
 
 export default function StudentsPage() {
   const router = useRouter();
+  const mounted = useRef(false);
   const [items, setItems] = useState<StudentRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,13 @@ export default function StudentsPage() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -89,6 +97,7 @@ export default function StudentsPage() {
           slots={{ toolbar: Toolbar }}
           filterModel={filterModel}
           onFilterModelChange={(model) => {
+            if (!mounted.current) return;
             setFilterModel(model);
             const qv = (model.quickFilterValues ?? []).join(" ").trim();
             setQuery(qv);
@@ -97,10 +106,10 @@ export default function StudentsPage() {
           sortingMode="server"
           rowCount={total}
           paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
+          onPaginationModelChange={(m) => { if (mounted.current) setPaginationModel(m); }}
           sortingOrder={["desc", "asc"]}
           sortModel={sortModel}
-          onSortModelChange={(m) => setSortModel(m.length ? m : [{ field: "lastUpdatedAt", sort: "desc" }])}
+          onSortModelChange={(m) => { if (mounted.current) setSortModel(m.length ? m : [{ field: "lastUpdatedAt", sort: "desc" }]); }}
           pageSizeOptions={[5, 10, 25, 50]}
         />
       </CardContent>

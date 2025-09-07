@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUrl, readSearch, readSort } from "@/lib/query";
-import { ReportRepository } from "@/repositories/reportRepository";
-import { StudentRepository } from "@/repositories/studentRepository";
+import { ReportRepository } from "@/server/repositories/reportRepository";
+import { StudentRepository } from "@/server/repositories/studentRepository";
 
 function toCsvValue(v: unknown) {
   if (v === null || v === undefined) return "";

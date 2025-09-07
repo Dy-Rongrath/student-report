@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { StudentRepository } from "@/repositories/studentRepository";
+import { StudentRepository } from "@/server/repositories/studentRepository";
 
 // We will mock the prisma client getter to stub underlying calls
 

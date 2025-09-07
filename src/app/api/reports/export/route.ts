@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ReportRepository } from "@/repositories/reportRepository";
+import { ReportRepository } from "@/server/repositories/reportRepository";
 import { getUrl, readSearch, readSort } from "@/lib/query";
 
 function toCsvValue(v: unknown) {

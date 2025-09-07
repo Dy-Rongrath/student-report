@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Button, Chip, Snackbar, Alert, Stack, Tooltip, Typography } from "@mui/material";
 import { DataGrid, GridColDef, GridFilterModel, GridPaginationModel, GridRenderCellParams, GridSortModel, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarQuickFilter } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
@@ -14,6 +14,7 @@ import { IconButton } from "@mui/material";
 type Row = { id: string; term: string; date: string; updatedAt?: string; percentage?: number };
 
 export function ClientStudentReports({ name }: { name: string }) {
+  const mounted = useRef(false);
   const [items, setItems] = useState<Row[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,13 @@ export function ClientStudentReports({ name }: { name: string }) {
   }, [filterModel.quickFilterValues, name, paginationModel.page, paginationModel.pageSize, sortModel]);
 
   useEffect(() => { refresh(); }, [refresh]);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => { setPaginationModel((m) => ({ ...m, page: 0 })); refresh(); }, 250);
@@ -249,16 +257,16 @@ export function ClientStudentReports({ name }: { name: string }) {
         columns={columns}
         loading={loading}
         slots={{ toolbar: Toolbar }}
-        filterModel={filterModel}
-        onFilterModelChange={(model) => setFilterModel(model)}
+  filterModel={filterModel}
+  onFilterModelChange={(model) => { if (mounted.current) setFilterModel(model); }}
         paginationMode="server"
         sortingMode="server"
         rowCount={total}
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
+  paginationModel={paginationModel}
+  onPaginationModelChange={(m) => { if (mounted.current) setPaginationModel(m); }}
         sortingOrder={["desc", "asc"]}
-        sortModel={sortModel}
-        onSortModelChange={(m) => setSortModel(m.length ? m : [{ field: "date", sort: "desc" }])}
+  sortModel={sortModel}
+  onSortModelChange={(m) => { if (mounted.current) setSortModel(m.length ? m : [{ field: "date", sort: "desc" }]); }}
         pageSizeOptions={[5, 10, 25, 50]}
       />
 

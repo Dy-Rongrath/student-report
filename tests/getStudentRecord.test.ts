@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ReportService } from "@/services/reportService";
-import * as studentRepoMod from "@/repositories/studentRepository";
-import * as reportRepoMod from "@/repositories/reportRepository";
+import { ReportService } from "@/server/services/reportService";
+import * as studentRepoMod from "@/server/repositories/studentRepository";
+import * as reportRepoMod from "@/server/repositories/reportRepository";
 
 describe("ReportService.getStudentRecord", () => {
   let srFind: any;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import * as reportServiceMod from "@/services/reportService";
-import * as reportRepoMod from "@/repositories/reportRepository";
-import * as studentRepoMod from "@/repositories/studentRepository";
+import * as reportServiceMod from "@/server/services/reportService";
+import * as reportRepoMod from "@/server/repositories/reportRepository";
+import * as studentRepoMod from "@/server/repositories/studentRepository";
 import { GET as listReports } from "@/app/api/students/[name]/reports/route";
 import { GET as exportReports } from "@/app/api/students/[name]/reports/export/route";
 

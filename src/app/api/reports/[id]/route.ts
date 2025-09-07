@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ReportDataSchema } from "@/domain/report/types";
-import { ReportService } from "@/services/reportService";
+import { ReportService } from "@/server/services/reportService";
 import { json, jsonError } from "@/lib/http";
 
 export async function GET(

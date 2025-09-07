@@ -1,6 +1,6 @@
 import { json } from "@/lib/http";
 import { getUrl, readPaging, readSort, readSearch } from "@/lib/query";
-import { ReportService } from "@/services/reportService";
+import { ReportService } from "@/server/services/reportService";
 
 export async function GET(_request: Request, context: { params: Promise<{ name: string }> }) {
   const { name } = await context.params;

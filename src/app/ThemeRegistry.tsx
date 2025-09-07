@@ -5,7 +5,7 @@ import { useServerInsertedHTML } from "next/navigation";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import createCache from "@emotion/cache";
 import type { SerializedStyles } from "@emotion/serialize";
-import { CssBaseline, useMediaQuery } from "@mui/material";
+import { CssBaseline } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 function createEmotionCache(): EmotionCache & { flush?: () => string } {
@@ -45,13 +45,19 @@ export const ThemeModeContext = React.createContext<{ mode: "light" | "dark"; to
 
 export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
   const [cache] = React.useState<EmotionCache & { flush?: () => string }>(createEmotionCache);
-  const prefersDark = useMediaQuery("(prefers-color-scheme: dark)");
   const [mode, setMode] = React.useState<"light" | "dark">("light");
 
   // Initialize mode from localStorage or system preference
   React.useEffect(() => {
-    const saved = typeof window !== "undefined" ? (localStorage.getItem("theme-mode") as "light" | "dark" | null) : null;
-    setMode(saved ?? (prefersDark ? "dark" : "light"));
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem("theme-mode") as "light" | "dark" | null;
+      const prefers = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const next = saved ?? (prefers ? "dark" : "light");
+      setMode((m) => (m === next ? m : next));
+    } catch {
+      // ignore
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

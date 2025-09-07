@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ReportService } from "@/services/reportService";
+import { ReportService } from "@/server/services/reportService";
 
 // We will mock repositories used by the service
-import * as studentRepoMod from "@/repositories/studentRepository";
-import * as reportRepoMod from "@/repositories/reportRepository";
+import * as studentRepoMod from "@/server/repositories/studentRepository";
+import * as reportRepoMod from "@/server/repositories/reportRepository";
 
 describe("ReportService.renameStudent merge behavior", () => {
   let srFind: any;

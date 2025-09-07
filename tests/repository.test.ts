@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import * as repoMod from "@/repositories/reportRepository";
+import * as repoMod from "@/server/repositories/reportRepository";
 
 describe("ReportRepository mapping", () => {
   it("maps list rows to DTO with ISO strings", async () => {

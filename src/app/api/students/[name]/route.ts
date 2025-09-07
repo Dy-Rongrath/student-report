@@ -1,5 +1,5 @@
 import { json, jsonError } from "@/lib/http";
-import { ReportService } from "@/services/reportService";
+import { ReportService } from "@/server/services/reportService";
 
 export async function PATCH(request: Request, context: { params: Promise<{ name: string }> }) {
   const { name } = await context.params;

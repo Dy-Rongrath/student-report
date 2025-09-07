@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ReportDataSchema } from "@/domain/report/types";
 import { randomUUID } from "crypto";
 import { getUrl, readPaging, readSearch, readSort } from "@/lib/query";
-import { ReportService } from "@/services/reportService";
+import { ReportService } from "@/server/services/reportService";
 import { json, jsonError } from "@/lib/http";
 
 export async function GET(request: Request) {

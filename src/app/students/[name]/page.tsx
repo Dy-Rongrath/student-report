@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ReportService } from "@/services/reportService";
+import { ReportService } from "@/server/services/reportService";
 import { Card, CardHeader, CardContent, Button } from "@mui/material";
 import { ManageStudentActions } from "./ManageStudentActions";
 import { ClientStudentReports } from "./ClientStudentReports";

@@ -1,6 +1,6 @@
 import { json } from "@/lib/http";
 import { getUrl, readPaging, readSearch, readSort } from "@/lib/query";
-import { ReportService } from "@/services/reportService";
+import { ReportService } from "@/server/services/reportService";
 
 export async function GET(request: Request) {
   try {

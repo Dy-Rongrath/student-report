@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardContent, Button, Stack, Typography, IconButton, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Box, Tooltip, Chip, Skeleton } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,7 @@ type Summary = {
 
 export default function ReportsIndexPage() {
   const router = useRouter();
+  const mounted = useRef(false);
   const [items, setItems] = useState<Summary[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -50,6 +51,13 @@ export default function ReportsIndexPage() {
     setTotal(data.total);
     setLoading(false);
   }, [paginationModel.page, paginationModel.pageSize, query, sortModel]);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   // Persist sort & pagination (client only)
   useEffect(() => {
@@ -253,12 +261,14 @@ export default function ReportsIndexPage() {
               onRowDoubleClick={(p) => router.push(`/reports/${encodeURIComponent((p.row as Summary).id)}`)}
               filterModel={filterModel}
               onFilterModelChange={(model) => {
+                if (!mounted.current) return;
                 setFilterModel(model);
                 const qv = (model.quickFilterValues ?? []).join(" ").trim();
                 setQuery(qv);
               }}
               columnVisibilityModel={columnVisibilityModel}
               onColumnVisibilityModelChange={(model) => {
+                if (!mounted.current) return;
                 setColumnVisibilityModel(model);
                 try { localStorage.setItem("reports:columnVisibility", JSON.stringify(model)); } catch {}
               }}
@@ -324,10 +334,10 @@ export default function ReportsIndexPage() {
               sortingMode="server"
               rowCount={total}
               paginationModel={paginationModel}
-              onPaginationModelChange={setPaginationModel}
+              onPaginationModelChange={(m) => { if (mounted.current) setPaginationModel(m); }}
               sortingOrder={["desc", "asc"]}
               sortModel={sortModel}
-              onSortModelChange={(m) => setSortModel(m.length ? m : [{ field: "updatedAt", sort: "desc" }])}
+              onSortModelChange={(m) => { if (mounted.current) setSortModel(m.length ? m : [{ field: "updatedAt", sort: "desc" }]); }}
               pageSizeOptions={[5, 10, 25, 50]}
             />
           </div>
