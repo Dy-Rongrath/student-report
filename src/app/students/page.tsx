@@ -11,6 +11,7 @@ type StudentRow = { name: string; reportCount: number; lastUpdatedAt?: string; l
 export default function StudentsPage() {
   const router = useRouter();
   const mounted = useRef(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [items, setItems] = useState<StudentRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -44,6 +45,7 @@ export default function StudentsPage() {
 
   useEffect(() => {
     mounted.current = true;
+  setIsMounted(true);
     return () => {
       mounted.current = false;
     };
@@ -85,6 +87,9 @@ export default function StudentsPage() {
     <Card>
       <CardHeader title="Students" subheader="Browse students and open their report history" action={<Button component={Link} href="/reports" variant="outlined">Go to Reports</Button>} />
       <CardContent>
+        {!isMounted ? (
+          <Box sx={{ height: 240 }} />
+        ) : (
         <DataGrid
           autoHeight
           disableRowSelectionOnClick
@@ -112,6 +117,7 @@ export default function StudentsPage() {
           onSortModelChange={(m) => { if (mounted.current) setSortModel(m.length ? m : [{ field: "lastUpdatedAt", sort: "desc" }]); }}
           pageSizeOptions={[5, 10, 25, 50]}
         />
+        )}
       </CardContent>
       <Dialog open={addOpen} onClose={() => setAddOpen(false)}>
         <DialogTitle>Add student</DialogTitle>

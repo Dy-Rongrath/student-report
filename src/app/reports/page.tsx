@@ -23,6 +23,7 @@ type Summary = {
 export default function ReportsIndexPage() {
   const router = useRouter();
   const mounted = useRef(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [items, setItems] = useState<Summary[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -54,6 +55,7 @@ export default function ReportsIndexPage() {
 
   useEffect(() => {
     mounted.current = true;
+  setIsMounted(true);
     return () => {
       mounted.current = false;
     };
@@ -250,6 +252,9 @@ export default function ReportsIndexPage() {
               <Chip size="small" color="warning" label="50–79%" />
               <Chip size="small" color="error" label="< 50%" />
             </Stack>
+            {!isMounted ? (
+              <Box sx={{ height: 360 }} />
+            ) : (
             <DataGrid
               autoHeight
       disableRowSelectionOnClick
@@ -340,6 +345,7 @@ export default function ReportsIndexPage() {
               onSortModelChange={(m) => { if (mounted.current) setSortModel(m.length ? m : [{ field: "updatedAt", sort: "desc" }]); }}
               pageSizeOptions={[5, 10, 25, 50]}
             />
+            )}
           </div>
         )}
       </CardContent>

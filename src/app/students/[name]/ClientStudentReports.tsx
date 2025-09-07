@@ -15,6 +15,7 @@ type Row = { id: string; term: string; date: string; updatedAt?: string; percent
 
 export function ClientStudentReports({ name }: { name: string }) {
   const mounted = useRef(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [items, setItems] = useState<Row[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -44,6 +45,7 @@ export function ClientStudentReports({ name }: { name: string }) {
 
   useEffect(() => {
     mounted.current = true;
+  setIsMounted(true);
     return () => {
       mounted.current = false;
     };
@@ -247,7 +249,8 @@ export function ClientStudentReports({ name }: { name: string }) {
 
   return (
     <>
-      <DataGrid
+  {!isMounted ? null : (
+  <DataGrid
         autoHeight
         disableRowSelectionOnClick
         density="compact"
@@ -269,6 +272,7 @@ export function ClientStudentReports({ name }: { name: string }) {
   onSortModelChange={(m) => { if (mounted.current) setSortModel(m.length ? m : [{ field: "date", sort: "desc" }]); }}
         pageSizeOptions={[5, 10, 25, 50]}
       />
+      )}
 
       <Snackbar open={snack.open} autoHideDuration={3000} onClose={() => setSnack((s) => ({ ...s, open: false }))} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert severity={snack.severity} variant="filled" onClose={() => setSnack((s) => ({ ...s, open: false }))} action={snack.linkId ? <Button color="inherit" size="small" component={Link} href={`/reports/${encodeURIComponent(snack.linkId)}`}>Open</Button> : undefined}>
