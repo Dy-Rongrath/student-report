@@ -88,9 +88,9 @@ export const ReportService = {
       return existingTarget;
     }
     // Regular rename: update reports' name and rename the student record
-    await ReportRepository.renameStudent(oldName, newName, old?.id);
-    await StudentRepository.rename(oldName, newName);
-    return await StudentRepository.findByName(newName);
+  await ReportRepository.renameStudent(oldName, newName, old?.id);
+  const updated = await StudentRepository.rename(oldName, newName);
+  return updated;
   },
 
   async deleteStudent(name: string) {

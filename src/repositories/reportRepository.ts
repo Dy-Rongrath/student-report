@@ -103,78 +103,7 @@ export const ReportRepository = {
     await prisma.report.delete({ where: { id } }).catch(() => null);
   },
 
-  // Student-centric queries (grouped by student name for now)
-  async listStudents(opts: { q?: string; skip: number; take: number; sortField: "lastUpdatedAt" | "name"; sortDir: "asc" | "desc" }) {
-    const { q, skip, take, sortField, sortDir } = opts;
-    const where = q ? { name: { contains: q, mode: "insensitive" as const } } : undefined;
-    const orderBy = sortField === "name" ? { name: sortDir } : { _max: { updatedAt: sortDir } };
-  const groups = await prisma.report.groupBy({
-      by: ["name"],
-      where,
-      _count: { _all: true },
-      _max: { updatedAt: true, date: true },
-      orderBy,
-      skip,
-      take,
-    });
-  return groups.map((g: { name: string; _count: { _all: number }; _max: { updatedAt: Date | null; date: Date | null } }) => ({
-      name: g.name,
-      reportCount: g._count._all,
-      lastUpdatedAt: g._max.updatedAt?.toISOString?.(),
-      lastDate: g._max.date?.toISOString?.(),
-    })) as Array<{ name: string; reportCount: number; lastUpdatedAt?: string; lastDate?: string }>;
-  },
-
-  async countStudents(q?: string) {
-    const where = q ? { name: { contains: q, mode: "insensitive" as const } } : undefined;
-    // groupBy with count to compute number of distinct names
-    const groups = await prisma.report.groupBy({ by: ["name"], where, _count: { _all: true } });
-    return groups.length;
-  },
-
-  async listReportsByStudent(
-    name: string,
-    opts: { q?: string; skip: number; take: number; sortField: "date" | "updatedAt"; sortDir: "asc" | "desc" }
-  ) {
-    const { skip, take, sortField, sortDir, q } = opts;
-    const where = q
-      ? {
-          AND: [
-            { name },
-            {
-              OR: [
-                { id: { contains: q } },
-                { term: { contains: q, mode: "insensitive" as const } },
-              ],
-            },
-          ],
-        }
-      : { name };
-    const rows = await prisma.report.findMany({ where, orderBy: { [sortField]: sortDir }, skip, take });
-  return rows.map((r: { id: string; term: string; date: Date; percentage: number | null; updatedAt: Date }) => ({
-      id: r.id,
-      term: r.term,
-      date: r.date.toISOString(),
-      percentage: r.percentage ?? undefined,
-      updatedAt: r.updatedAt?.toISOString?.(),
-    })) as Array<{ id: string; term: string; date: string; percentage?: number; updatedAt?: string }>;
-  },
-  async countReportsByStudent(name: string, q?: string) {
-    const where = q
-      ? {
-          AND: [
-            { name },
-            {
-              OR: [
-                { id: { contains: q } },
-                { term: { contains: q, mode: "insensitive" as const } },
-              ],
-            },
-          ],
-        }
-      : { name };
-    return prisma.report.count({ where });
-  },
+  // Note: name-based student listing/counting removed in favor of StudentRepository and studentId-based queries.
 
   // StudentId-based versions (prefer these for correctness)
   async listReportsByStudentId(
