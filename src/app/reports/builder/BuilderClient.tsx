@@ -40,6 +40,7 @@ export default function BuilderClient() {
   );
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({ open: false, message: "", severity: "success" });
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   // Load existing report to edit if id is provided
   useEffect(() => {
@@ -62,6 +63,22 @@ export default function BuilderClient() {
     };
     load();
   }, [prefillId]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    setDirty(true);
+  }, [student, scores, comments]);
+
+  // Warn on navigate away with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!dirty) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty]);
 
   const onAddRow = () => setScores((prev) => [...prev, { indicator: "", score: 0 }]);
   const onRemoveRow = (idx: number) => setScores((prev) => prev.filter((_, i) => i !== idx));
@@ -143,6 +160,7 @@ export default function BuilderClient() {
       }
     } finally {
       setSaving(false);
+  setDirty(false);
     }
   };
 
@@ -154,22 +172,25 @@ export default function BuilderClient() {
 
   return (
     <Box className="print:block" sx={{ minHeight: "100vh", p: 2 }}>
-      <Box sx={{ display: { xs: "block", md: "grid" }, gridTemplateColumns: { md: "1fr 1fr" }, gap: 2 }}>
+  <Box sx={{ display: { xs: "block", md: "grid" }, gridTemplateColumns: { md: "1fr 1fr" }, gap: 2 }}>
         {/* Form - hidden on print */}
         <Box className="print:hidden">
-          <Card variant="outlined">
+          <Card>
             <CardHeader
               title={id ? "Edit Report" : "Create Report"}
-              subheader="Fill the form. The preview updates live. Printing includes only the preview."
+        subheader="Fill the form. The preview updates live. Printing includes only the preview."
               action={
                 <Stack direction="row" spacing={1}>
-                  <Button variant="outlined" size="small" href="/reports">Back to list</Button>
-                  {id && <Button variant="contained" size="small" href={`/reports/${encodeURIComponent(id)}`}>View</Button>}
+          <Button variant="outlined" size="small" href="/reports">Back to list</Button>
+          {id && <Button variant="contained" size="small" href={`/reports/${encodeURIComponent(id)}`}>View</Button>}
                 </Stack>
               }
             />
             <CardContent>
               <Stack spacing={2}>
+                {dirty && (
+                  <Alert severity="info" variant="outlined">You have unsaved changes. Don’t forget to save.</Alert>
+                )}
                 {id && (
                   <TextField label="Report ID" value={id} size="small" InputProps={{ readOnly: true }} helperText="Auto-generated on create" />
                 )}
@@ -226,9 +247,9 @@ export default function BuilderClient() {
                   </Stack>
                 </Stack>
 
-                <Stack direction="row" spacing={1}>
-                  <Button variant="contained" color="primary" disabled={!isValid || saving} onClick={() => window.print()}>Print</Button>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                   <Button variant="contained" color="success" disabled={!isValid || saving} onClick={onSave} startIcon={saving ? <CircularProgress size={16} /> : undefined}>{saving ? "Saving…" : (id ? "Save changes" : "Create report")}</Button>
+                  <Button variant="outlined" color="inherit" disabled={!isValid} onClick={() => window.print()}>Print</Button>
                 </Stack>
               </Stack>
             </CardContent>
@@ -236,7 +257,7 @@ export default function BuilderClient() {
         </Box>
 
         {/* Preview - this is the only section that prints */}
-        <Box>
+  <Box sx={{ position: { md: "sticky" }, top: { md: 16 } }}>
           <ClientReport student={student as ClientReportProps["student"]} scores={scores as ClientReportProps["scores"]} comments={comments} />
         </Box>
       </Box>

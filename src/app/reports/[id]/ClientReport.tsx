@@ -23,6 +23,8 @@ const ReportHeader: React.FC = () => (
     <header className="flex flex-col items-center justify-center pb-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo_mekun_academy.png" alt="Mekun Academy Logo" className="h-16 w-auto mb-2" />
+        <h1 className="text-xl font-bold">Mekun Academy</h1>
+        <p className="text-sm text-gray-600">Student Progress Report</p>
     </header>
 );
 

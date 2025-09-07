@@ -5,7 +5,7 @@ import { useServerInsertedHTML } from "next/navigation";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import createCache from "@emotion/cache";
 import type { SerializedStyles } from "@emotion/serialize";
-import { CssBaseline } from "@mui/material";
+import { CssBaseline, useMediaQuery } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 function createEmotionCache(): EmotionCache & { flush?: () => string } {
@@ -41,20 +41,45 @@ function createEmotionCache(): EmotionCache & { flush?: () => string } {
   return cache as EmotionCache & { flush?: () => string };
 }
 
+export const ThemeModeContext = React.createContext<{ mode: "light" | "dark"; toggle: () => void }>({ mode: "light", toggle: () => {} });
+
 export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
   const [cache] = React.useState<EmotionCache & { flush?: () => string }>(createEmotionCache);
+  const prefersDark = useMediaQuery("(prefers-color-scheme: dark)");
+  const [mode, setMode] = React.useState<"light" | "dark">("light");
+
+  // Initialize mode from localStorage or system preference
+  React.useEffect(() => {
+    const saved = typeof window !== "undefined" ? (localStorage.getItem("theme-mode") as "light" | "dark" | null) : null;
+    setMode(saved ?? (prefersDark ? "dark" : "light"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toggle = React.useCallback(() => {
+    setMode((m) => {
+      const next = m === "light" ? "dark" : "light";
+      if (typeof window !== "undefined") localStorage.setItem("theme-mode", next);
+      return next;
+    });
+  }, []);
+
   const theme = React.useMemo(
     () =>
       createTheme({
         cssVariables: true,
-        colorSchemes: { light: true },
-        shape: { borderRadius: 8 },
+        colorSchemes: { light: true, dark: true },
+        palette: {
+          mode,
+          primary: { main: "#2563EB" },
+        },
+        shape: { borderRadius: 10 },
         components: {
           MuiTextField: { defaultProps: { size: "small", variant: "outlined" } },
           MuiButton: { defaultProps: { variant: "contained" } },
+          MuiCard: { defaultProps: { variant: "outlined" } },
         },
       }),
-    []
+    [mode]
   );
 
   useServerInsertedHTML(() => {
@@ -73,8 +98,10 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
   return (
     <CacheProvider value={cache}>
       <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
+        <ThemeModeContext.Provider value={{ mode, toggle }}>
+          <CssBaseline />
+          {children}
+        </ThemeModeContext.Provider>
       </ThemeProvider>
     </CacheProvider>
   );
