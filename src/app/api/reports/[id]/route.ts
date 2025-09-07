@@ -21,6 +21,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
   const json = await request.json();
   const parsed = ReportDataSchema.safeParse(json);
   if (!parsed.success) {

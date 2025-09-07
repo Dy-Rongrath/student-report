@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ReportDataSchema } from "@/domain/report/types";
 
 export async function GET(request: Request) {
   try {
@@ -46,5 +47,30 @@ export async function GET(request: Request) {
   } catch {
     // On failure, return empty list but don't crash UI
     return NextResponse.json({ rows: [], total: 0 }, { status: 200 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const json = await request.json();
+    const parsed = ReportDataSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ ok: false, error: "Invalid payload", details: parsed.error.flatten() }, { status: 400 });
+    }
+    const d = parsed.data;
+    const created = await prisma.report.create({
+      data: {
+        // id is auto via @default(cuid())
+        name: d.student.name,
+        term: d.term,
+        date: new Date(d.date),
+        percentage: d.percentage ?? null,
+        data: JSON.stringify(d),
+      },
+      select: { id: true },
+    });
+    return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
+  } catch {
+    return NextResponse.json({ ok: false, error: "Create failed" }, { status: 500 });
   }
 }

@@ -14,7 +14,7 @@ export default function BuilderClient() {
   const searchParams = useSearchParams();
   const prefillId = searchParams.get("id");
 
-  const [id, setId] = useState<string>(prefillId ?? "123");
+  const [id, setId] = useState<string | null>(prefillId);
   const [student, setStudent] = useState({
     name: "SAMPHEAVIN PHURINTWADH",
     grade: "3",
@@ -92,7 +92,7 @@ export default function BuilderClient() {
         logoUrl: "/logo_mekun_academy.png",
       },
       student: {
-        id,
+  id: id ?? "",
         name: student.name,
         className: String(student.grade),
         session: "",
@@ -110,16 +110,36 @@ export default function BuilderClient() {
   const onSave = async () => {
     try {
       setSaving(true);
-      const res = await fetch(`/api/reports/${encodeURIComponent(id)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = id
+        ? await fetch(`/api/reports/${encodeURIComponent(id)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        : await fetch(`/api/reports`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
       if (!res.ok) {
         const e = await res.json().catch(() => ({}));
         setSnack({ open: true, message: `Failed to save: ${res.status} ${e?.error ?? ""}`.trim(), severity: "error" });
       } else {
-        setSnack({ open: true, message: "Saved", severity: "success" });
+        if (!id) {
+          const j = (await res.json().catch(() => ({}))) as { id?: string };
+          if (j?.id) {
+            setId(j.id);
+            setSnack({ open: true, message: "Created", severity: "success" });
+            // Put id in URL so refresh/edit works
+            const url = new URL(window.location.href);
+            url.searchParams.set("id", j.id);
+            window.history.replaceState({}, "", url.toString());
+          } else {
+            setSnack({ open: true, message: "Created (no id returned)", severity: "success" });
+          }
+        } else {
+          setSnack({ open: true, message: "Saved", severity: "success" });
+        }
       }
     } finally {
       setSaving(false);
@@ -127,7 +147,7 @@ export default function BuilderClient() {
   };
 
   const isValid = useMemo(() => {
-    const basicOk = id.trim().length > 0 && student.name.trim().length > 0 && student.teacher.trim().length > 0 && student.evaluationType.trim().length > 0;
+  const basicOk = (id === null || id.length > 0) && student.name.trim().length > 0 && student.teacher.trim().length > 0 && student.evaluationType.trim().length > 0;
     const rowsOk = scores.length > 0 && scores.every((r) => r.indicator.trim().length > 0 && !Number.isNaN(r.score) && r.score >= 0 && r.score <= 10);
     return basicOk && rowsOk;
   }, [id, student, scores]);
@@ -138,10 +158,21 @@ export default function BuilderClient() {
         {/* Form - hidden on print */}
         <Box className="print:hidden">
           <Card variant="outlined">
-            <CardHeader title="Report Builder" subheader="Fill the form. The preview updates live. Printing includes only the preview." />
+            <CardHeader
+              title={id ? "Edit Report" : "Create Report"}
+              subheader="Fill the form. The preview updates live. Printing includes only the preview."
+              action={
+                <Stack direction="row" spacing={1}>
+                  <Button variant="outlined" size="small" href="/reports">Back to list</Button>
+                  {id && <Button variant="contained" size="small" href={`/reports/${encodeURIComponent(id)}`}>View</Button>}
+                </Stack>
+              }
+            />
             <CardContent>
               <Stack spacing={2}>
-                <TextField label="Report ID" placeholder="e.g. 123" value={id} onChange={(e) => setId(e.target.value)} size="small" />
+                {id && (
+                  <TextField label="Report ID" value={id} size="small" InputProps={{ readOnly: true }} helperText="Auto-generated on create" />
+                )}
 
                 <Divider textAlign="left">Student</Divider>
                 <TextField label="Name" placeholder="Full name" value={student.name} onChange={(e) => setStudent({ ...student, name: e.target.value })} size="small" error={student.name.trim().length === 0} helperText={student.name.trim().length === 0 ? "Name is required." : ""} />

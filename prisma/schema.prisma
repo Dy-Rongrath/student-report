@@ -10,7 +10,7 @@ datasource db {
 }
 
 model Report {
-  id         String   @id
+  id         String   @id @default(cuid())
   name       String
   term       String
   date       DateTime

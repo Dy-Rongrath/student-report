@@ -10,7 +10,7 @@ export interface Score {
 }
 
 export interface Student {
-  id: string;
+  id?: string;
   name: string;
   className: string;
   rollNo?: string;
@@ -51,7 +51,7 @@ export const ScoreSchema = z.object({
 });
 
 export const StudentSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
   name: z.string(),
   className: z.string(),
   rollNo: z.string().optional(),
