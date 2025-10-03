@@ -6,7 +6,7 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public status: number,
-    public data?: any
+    public data?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -51,14 +51,14 @@ export const api = {
   get: <T>(endpoint: string, options?: RequestInit) =>
     fetchApi<T>(endpoint, { ...options, method: 'GET' }),
 
-  post: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+  post: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
     fetchApi<T>(endpoint, {
       ...options,
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  put: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+  put: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
     fetchApi<T>(endpoint, {
       ...options,
       method: 'PUT',
@@ -68,7 +68,7 @@ export const api = {
   delete: <T>(endpoint: string, options?: RequestInit) =>
     fetchApi<T>(endpoint, { ...options, method: 'DELETE' }),
 
-  patch: <T>(endpoint: string, data?: any, options?: RequestInit) =>
+  patch: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
     fetchApi<T>(endpoint, {
       ...options,
       method: 'PATCH',

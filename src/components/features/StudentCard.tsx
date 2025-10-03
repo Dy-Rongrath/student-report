@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Student } from '@/types';
 import { Card, CardBody } from '@/components/ui/Card';
 import { getInitials } from '@/lib/utils';
@@ -18,9 +19,11 @@ export function StudentCard({ student }: StudentCardProps) {
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
               {student.avatar ? (
-                <img
+                <Image
                   src={student.avatar}
                   alt={`${student.firstName} ${student.lastName}`}
+                  width={48}
+                  height={48}
                   className="h-12 w-12 rounded-full object-cover"
                 />
               ) : (

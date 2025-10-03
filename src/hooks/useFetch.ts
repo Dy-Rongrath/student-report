@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 interface FetchState<T> {
   data: T | null;
@@ -15,6 +15,12 @@ export function useFetch<T>(url: string | null, options?: RequestInit) {
     loading: true,
     error: null,
   });
+
+  // Memoize options to prevent unnecessary re-fetches
+  const optionsString = useMemo(
+    () => (options ? JSON.stringify(options) : ''),
+    [options]
+  );
 
   useEffect(() => {
     if (!url) {
@@ -58,7 +64,8 @@ export function useFetch<T>(url: string | null, options?: RequestInit) {
       isMounted = false;
       controller.abort();
     };
-  }, [url]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, optionsString]);
 
   return state;
 }
