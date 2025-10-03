@@ -17,7 +17,22 @@ We take the security of the Student Report System seriously. If you believe you 
 
 **Please do NOT report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via email to:
+We offer two ways to report security vulnerabilities:
+
+#### Option 1: Private Vulnerability Reporting (Recommended)
+
+Use GitHub's private vulnerability reporting feature:
+
+1. Go to [Security Advisories](https://github.com/Dy-Rongrath/student-report/security/advisories)
+2. Click "Report a vulnerability"
+3. Fill in the details of the vulnerability
+4. Submit privately
+
+This ensures your report is handled securely and we can coordinate on a fix privately.
+
+#### Option 2: Email
+
+Alternatively, report via email to:
 
 **Email:** security@example.com (or your actual email)
 
@@ -109,12 +124,29 @@ After submitting a vulnerability report, you can expect:
    - Use CORS appropriately
    - Rate limit API endpoints
 
+## Security Advisories
+
+We use GitHub Security Advisories to manage and disclose security vulnerabilities:
+
+- **View published advisories:** [Security Advisories](https://github.com/Dy-Rongrath/student-report/security/advisories)
+- **Report a vulnerability:** [Private Reporting](https://github.com/Dy-Rongrath/student-report/security/advisories/new)
+- **Dependabot alerts:** [Security Dashboard](https://github.com/Dy-Rongrath/student-report/security/dependabot)
+
+### When We Create Advisories
+
+We will create security advisories for:
+- Critical or high severity vulnerabilities in our code
+- Vulnerabilities that affect data confidentiality, integrity, or availability
+- Authentication or authorization bypasses
+- Any security issue that requires user action
+
 ## Security Updates
 
 We will announce security updates through:
-- GitHub Security Advisories
+- GitHub Security Advisories (primary method)
 - Repository README
 - Email notifications to maintainers
+- Dependabot pull requests (for dependency vulnerabilities)
 
 ## Known Security Considerations
 
