@@ -68,16 +68,10 @@ student-report/
    npm install
    ```
 
-2. **Setup Database**:
-   - See [DATABASE_AUTH_SETUP.md](./DATABASE_AUTH_SETUP.md) for detailed instructions
-   - Quick setup: Use online database (Vercel Postgres, Supabase, etc.)
-   - Update `.env.local` with your database URL
-
-3. **Run Prisma Migrations**:
-   ```bash
-   npx prisma generate
-   npx prisma migrate dev --name init
-   ```
+2. **Setup Database** ✅ COMPLETED:
+   - Using Vercel Postgres
+   - Database tables already created
+   - See [VERCEL_POSTGRES_SETUP.md](./VERCEL_POSTGRES_SETUP.md) for details
 
 4. **Run the development server**:
    ```bash
