@@ -1,3 +1,22 @@
+# ============================================================================
+# GitHub Actions CI/CD Pipeline for Student Report System
+# ============================================================================
+#
+# IMPORTANT: GitHub Secrets Required
+# ------------------------------------
+# Before this workflow can run successfully, add these secrets:
+# Go to: Repository Settings → Secrets and variables → Actions
+#
+# Required Secrets:
+#   1. DATABASE_URL      - Your Vercel Postgres connection string
+#   2. NEXTAUTH_SECRET   - Your NextAuth secret key
+#   3. NEXTAUTH_URL      - Your production URL
+#
+# Note: The warnings "Context access might be invalid" are normal and will
+# disappear after you add the secrets to your GitHub repository.
+#
+# ============================================================================
+
 name: CI/CD Pipeline
 
 on:
@@ -50,6 +69,8 @@ jobs:
       
       - name: Generate Prisma Client
         run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       
       - name: Build Next.js
         run: npm run build
