@@ -25,8 +25,18 @@ This folder contains comprehensive documentation for the Student Report System.
 - **DEPLOYMENT_COMPLETE.md** - Deployment checklist and verification
 - **REDIRECT_LOOP_FIX.md** - Solution for redirect loop issues
 
-### CI/CD
+### CI/CD & Automation
 - **GITHUB_SECRETS_GUIDE.md** - GitHub Actions secrets setup
+- **AUTO_MERGE_GUIDE.md** - Automated Dependabot PR merging
+
+### Security
+- **SECURITY.md** - Security policy and vulnerability reporting
+- **GITHUB_SECURITY_GUIDE.md** - Complete security features setup
+- **BRANCH_PROTECTION_GUIDE.md** - Branch protection rules
+
+### GitHub Wiki
+- **WIKI_UPLOAD_GUIDE.md** - Upload documentation to GitHub Wiki
+- **wiki-content/** - All Wiki pages and sidebar/footer
 
 ### Reference
 - **ADMIN_CREDENTIALS.md** - Default admin credentials and sample data
