@@ -1,0 +1,139 @@
+# Dependabot configuration for automated dependency updates
+# This file configures Dependabot to automatically create PRs for dependency updates
+
+version: 2
+updates:
+  # Enable version updates for npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "00:00"
+      timezone: "UTC"
+    
+    # Maximum number of open pull requests for version updates
+    open-pull-requests-limit: 10
+    
+    # Add labels to PRs
+    labels:
+      - "dependencies"
+      - "automated"
+    
+    # Assignees for PRs (optional - add your GitHub username)
+    # assignees:
+    #   - "Dy-Rongrath"
+    
+    # Reviewers for PRs (optional)
+    # reviewers:
+    #   - "your-reviewer"
+    
+    # Commit message preferences
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    
+    # Group dependency updates to reduce PR noise
+    groups:
+      # Group all production dependencies
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Group all development dependencies
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Group Next.js related packages
+      nextjs:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+      
+      # Group Prisma related packages
+      prisma:
+        patterns:
+          - "@prisma/*"
+          - "prisma"
+      
+      # Group NextAuth related packages
+      auth:
+        patterns:
+          - "next-auth"
+          - "@auth/*"
+      
+      # Group TypeScript related packages
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+      
+      # Group ESLint related packages
+      eslint:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+      
+      # Group Tailwind CSS related packages
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "postcss"
+          - "autoprefixer"
+    
+    # Ignore specific dependencies (optional)
+    # ignore:
+    #   - dependency-name: "package-name"
+    #     versions: ["1.x", "2.x"]
+    
+    # Allow automatic merge for minor and patch updates (requires branch protection rules)
+    # pull-request-branch-name:
+    #   separator: "/"
+    
+    # Milestone (optional)
+    # milestone: 1
+    
+    # Target branch for PRs (default is repository's default branch)
+    target-branch: "main"
+    
+    # Vendor updates from vendored directories
+    # vendor: true
+    
+    # Versioning strategy
+    versioning-strategy: auto
+    
+    # Rebase strategy for PRs
+    rebase-strategy: auto
+
+  # GitHub Actions workflow updates (optional but recommended)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "00:00"
+      timezone: "UTC"
+    
+    open-pull-requests-limit: 5
+    
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
+    
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    
+    # Group all GitHub Actions updates
+    groups:
+      github-actions:
+        patterns:
+          - "*"
