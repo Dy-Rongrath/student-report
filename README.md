@@ -4,12 +4,16 @@ A modern, comprehensive student reporting and management system built with Next.
 
 ## 🚀 Features
 
-- **Student Management**: Manage student information, profiles, and enrollment details
-- **Report Generation**: Create and manage comprehensive academic reports
-- **Performance Analytics**: Track and analyze student performance
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
-- **Type-Safe**: Built with TypeScript for better development experience
-- **Modern UI**: Clean and intuitive interface with Tailwind CSS
+- **🔐 Authentication**: Secure user authentication with NextAuth.js
+- **🗄️ Database**: PostgreSQL database with Prisma ORM
+- **👥 Student Management**: Manage student information, profiles, and enrollment details
+- **📊 Report Generation**: Create and manage comprehensive academic reports
+- **📈 Performance Analytics**: Track and analyze student performance
+- **🔒 Protected Routes**: Middleware-based route protection
+- **👤 User Roles**: Role-based access control (USER, ADMIN, TEACHER)
+- **📱 Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **✨ Type-Safe**: Built with TypeScript for better development experience
+- **🎨 Modern UI**: Clean and intuitive interface with Tailwind CSS
 
 ## 📁 Project Structure
 
@@ -50,7 +54,10 @@ student-report/
 - **Language**: TypeScript 5
 - **UI Library**: React 19
 - **Styling**: Tailwind CSS 4
-- **State Management**: React Hooks
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js with JWT
+- **Password Hashing**: Bcrypt
+- **State Management**: React Hooks + NextAuth Session
 - **API**: Next.js API Routes
 - **Build Tool**: Turbopack
 
@@ -61,13 +68,29 @@ student-report/
    npm install
    ```
 
-2. **Run the development server**:
+2. **Setup Database**:
+   - See [DATABASE_AUTH_SETUP.md](./DATABASE_AUTH_SETUP.md) for detailed instructions
+   - Quick setup: Use online database (Vercel Postgres, Supabase, etc.)
+   - Update `.env.local` with your database URL
+
+3. **Run Prisma Migrations**:
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev --name init
+   ```
+
+4. **Run the development server**:
    ```bash
    npm run dev
    ```
 
-3. **Open your browser**:
+5. **Open your browser**:
    Navigate to [http://localhost:3000](http://localhost:3000)
+
+6. **Create your account**:
+   - Go to `/auth/signup`
+   - Register a new user
+   - Sign in at `/auth/signin`
 
 ## 📝 Available Scripts
 

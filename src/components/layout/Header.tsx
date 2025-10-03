@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { APP_NAME, ROUTES } from '@/constants';
+import { Button } from '@/components/ui/Button';
 
 export function Header() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
 
   const navItems = [
     { label: 'Home', href: ROUTES.HOME },
@@ -40,22 +43,36 @@ export function Header() {
               ))}
             </div>
           </div>
-          <div className="flex items-center">
-            <button className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </button>
+          <div className="flex items-center space-x-4">
+            {status === 'loading' ? (
+              <div className="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
+            ) : session ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-700">
+                  {session.user?.name || session.user?.email}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link href="/auth/signin">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/auth/signup">
+                  <Button variant="primary" size="sm">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </nav>
